@@ -1,9 +1,10 @@
-import { strict as assert } from 'node:assert';
+import assert from 'node:assert/strict';
 import test from 'node:test';
 import { SwitchOrder } from '../../src/core/domain/entities/switch-order.js';
 import { CloseSwitchOrder } from '../../src/core/use-cases/close-switch-order.js';
 import { InMemoryOperationRegistry } from '../../src/infra/database/in-memory/in-memory-operation-registry.js';
 import { InMemoryOrderRepository } from '../../src/infra/database/in-memory/in-memory-order-repository.js';
+import { InMemoryUnitOfWork } from '../../src/infra/database/in-memory/in-memory-unit-of-work.js';
 import type { Clock } from '../../src/core/use-cases/ports/clock.js';
 
 class FixedClock implements Clock {
@@ -31,9 +32,10 @@ const createInProgressOrder = () => {
 const createUseCase = () => {
   const orders = new InMemoryOrderRepository();
   const operations = new InMemoryOperationRegistry();
+  const uow = new InMemoryUnitOfWork(orders, operations);
   const clock = new FixedClock(new Date('2026-11-09T15:00:00.000Z'));
-  const useCase = new CloseSwitchOrder(orders, operations, clock);
-  return { orders, operations, useCase };
+  const useCase = new CloseSwitchOrder(uow, clock);
+  return { orders, operations, uow, useCase };
 };
 
 test('fecha uma ordem pelo caso de uso', async () => {
