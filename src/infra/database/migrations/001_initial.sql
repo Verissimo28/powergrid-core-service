@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS switch_orders (
   id TEXT PRIMARY KEY,
+  description TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('OPEN', 'IN_PROGRESS', 'COMPLETED')),
   assigned_operator_id TEXT,
   version INTEGER NOT NULL CHECK (version > 0),
@@ -7,6 +8,10 @@ CREATE TABLE IF NOT EXISTS switch_orders (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE switch_orders
+  ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';
+
 
 CREATE INDEX IF NOT EXISTS switch_orders_status_idx
   ON switch_orders (status);
