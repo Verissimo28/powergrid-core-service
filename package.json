@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "tsx --test tests/unit/*.test.ts",
     "test:unit": "tsx --test tests/unit/*.test.ts",
-    "lint": "echo 'lint do core-service será configurado na etapa de qualidade'"
+    "lint": "echo 'lint do core-service será configurado na etapa de qualidade'",
+    "test:integration": "tsx --test tests/integration/*.test.ts"
   },
   "dependencies": {
     "dotenv": "16.4.7",
