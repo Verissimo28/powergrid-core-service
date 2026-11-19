@@ -62,6 +62,24 @@ test('executa o fluxo HTTP completo de uma ordem', async () => {
   assert.equal(started.statusCode, 200);
   assert.equal(started.json().status, 'IN_PROGRESS');
   assert.equal(started.json().version, 2);
+  assert.equal(started.json().idempotentReplay, false);
+
+  const startedReplay = await app.inject({
+    method: 'POST',
+    url: `/orders/${orderId}/start`,
+    headers: {
+      'idempotency-key': startOperationId,
+      'x-correlation-id': 'correlation-flow-001',
+    },
+    payload: {
+      operatorId: 'operator-01',
+    },
+  });
+
+  assert.equal(startedReplay.statusCode, 200);
+  assert.equal(startedReplay.json().status, 'IN_PROGRESS');
+  assert.equal(startedReplay.json().version, 2);
+  assert.equal(startedReplay.json().idempotentReplay, true);
 
   const closed = await app.inject({
     method: 'POST',

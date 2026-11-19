@@ -140,6 +140,7 @@ export function buildApp(): FastifyInstance {
     const result = await startOrder.execute({
       orderId: request.params.orderId,
       operatorId: request.body.operatorId,
+      operationId,
     });
 
     if (!result.ok) {
