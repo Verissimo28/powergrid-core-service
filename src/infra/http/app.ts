@@ -141,6 +141,7 @@ export function buildApp(): FastifyInstance {
       orderId: request.params.orderId,
       operatorId: request.body.operatorId,
       operationId,
+      correlationId,
     });
 
     if (!result.ok) {
@@ -192,6 +193,7 @@ export function buildApp(): FastifyInstance {
       operatorId,
       operationId,
       safetyChecksPassed,
+      correlationId,
     });
 
     if (result.ok) return reply.code(200).send(result.value);

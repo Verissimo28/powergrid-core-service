@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { SwitchOrderSnapshot } from '../domain/entities/switch-order.js';
 import type { DomainError } from '../domain/errors/domain-error.js';
 import type { Result } from '../domain/result.js';
@@ -14,6 +15,7 @@ export class StartSwitchOrder {
     orderId: string;
     operatorId: string;
     operationId: string;
+    correlationId?: string;
   }): Promise<Result<StartSwitchOrderResult, DomainError>> {
     return this.uow.transaction(async (transaction) => {
       const alreadyProcessed = await transaction.operations.has(
@@ -44,10 +46,26 @@ export class StartSwitchOrder {
       await transaction.orders.save(found.value);
       await transaction.operations.add(input.operationId);
 
+      const snapshot = found.value.snapshot();
+      await transaction.outbox.append({
+        eventId: randomUUID(),
+        eventType: 'order.started.v1',
+        aggregateId: snapshot.id,
+        aggregateVersion: snapshot.version,
+        correlationId: input.correlationId ?? input.operationId,
+        producer: 'core-service',
+        payload: {
+          orderId: snapshot.id,
+          operatorId: input.operatorId,
+          previousStatus: 'OPEN',
+          status: 'IN_PROGRESS',
+        },
+      });
+
       return {
         ok: true,
         value: {
-          ...found.value.snapshot(),
+          ...snapshot,
           idempotentReplay: false,
         },
       };

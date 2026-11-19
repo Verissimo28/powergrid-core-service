@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { DomainError } from '../domain/errors/domain-error.js';
 import { fail, ok, type Result } from '../domain/result.js';
 import type {
@@ -70,6 +71,22 @@ export class CloseSwitchOrder {
           ),
         );
       }
+
+      await transaction.outbox.append({
+        eventId: randomUUID(),
+        eventType: 'order.closed.v1',
+        aggregateId: snapshot.id,
+        aggregateVersion: snapshot.version,
+        correlationId: input.correlationId ?? input.operationId,
+        producer: 'core-service',
+        payload: {
+          orderId: snapshot.id,
+          operatorId: input.operatorId,
+          closedAt: snapshot.closedAt,
+          previousStatus: 'IN_PROGRESS',
+          status: 'COMPLETED',
+        },
+      });
 
       return ok({
         orderId: snapshot.id,

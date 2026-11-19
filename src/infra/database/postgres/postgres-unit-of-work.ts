@@ -5,6 +5,7 @@ import type {
 } from '../../../core/use-cases/ports/unit-of-work.js';
 import { PostgresOperationRegistry } from './postgres-operation-registry.js';
 import { PostgresOrderRepository } from './postgres-order-repository.js';
+import { PostgresOutboxRepository } from './postgres-outbox-repository.js';
 
 export class PostgresUnitOfWork implements UnitOfWork {
   public constructor(private readonly pool: Pool) {}
@@ -20,6 +21,7 @@ export class PostgresUnitOfWork implements UnitOfWork {
       const context: TransactionContext = {
         orders: new PostgresOrderRepository(client),
         operations: new PostgresOperationRegistry(client),
+        outbox: new PostgresOutboxRepository(client),
       };
 
       const result = await work(context);
